@@ -14,81 +14,103 @@ let appState = {
   editingReportId: null,        // null when creating new, or string ID when editing
   reports: [],
   currentReport: {
-    thana: 'अमरोहा देहात',
-    janpad: 'अमरोहा',
-    rapatNo: '82',
-    rapatDate: '02/10/26',
-    rapatTime: '14:30 बजे',
-    courtOfficer: 'श्रीमान उपजिला मजिस्ट्रेट महोदय सदर',
-    reportingOfficer: 'उप निरीक्षक इंद्रजीत सिंह',
+    thana: '',
+    janpad: '',
+    rapatNo: '',
+    rapatDate: '',
+    rapatTime: '',
+    courtOfficer: '',
+    reportingOfficer: '',
     party1: [
-      { name: 'जयकुमार', parentName: 'अमर सिंह', age: '32 वर्ष', address: 'हसनपुर कचिया, थाना अमरोहा देहात, जनपद अमरोहा' }
+      { name: '', parentName: '', age: '', address: '' }
     ],
     party2: [
-      { name: 'बंटी', parentName: 'अमर सिंह', age: '28 वर्ष', address: 'हसनपुर कचिया, थाना अमरोहा देहात, जनपद अमरोहा' }
+      { name: '', parentName: '', age: '', address: '' }
     ],
-    subject: 'घर की जमीन के बंटवारे को लेकर विवाद',
-    inquiryFacts: 'दोनों पक्षों में कसीदगी बनी हुई है। दोनों पक्ष कभी भी लड़-झगड़कर शांति व्यवस्था भंग कर सकते हैं।',
-    legalPrayer: 'अतः शांति व्यवस्था की दृष्टिगत पार्टी प्रथम उपरोक्त का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है। अतः श्रीमान जी से निवेदन है कि पार्टी प्रथम उपरोक्त को भारी से भारी धनराशि / मुचलके से पाबंद करने की कृपा करें।',
-    attachments: 'रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क'
+    subject: '',
+    inquiryFacts: '',
+    legalPrayer: '',
+    attachments: ''
   }
 };
 
 // Initialize Application on Page Load
 document.addEventListener('DOMContentLoaded', () => {
   loadReportsFromStorage();
+  loadActiveDraft();
   populateFormFromState();
   renderPartyCards(1);
   renderPartyCards(2);
   syncLivePreview();
   renderDashboard();
 
-  // If there are saved reports, the user requested:
-  // "next time I open it should show previous reports and option to add new report"
   if (appState.reports && appState.reports.length > 0) {
     switchMainView('dashboard');
   } else {
     switchMainView('generator');
   }
+
+  const form = document.getElementById('report-input-form');
+  if (form) {
+    form.addEventListener('input', () => {
+      saveActiveDraft();
+    });
+  }
 });
 
 /* ================= STORAGE MANAGEMENT ================= */
+function loadActiveDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (raw) {
+      const draft = JSON.parse(raw);
+      if (draft && typeof draft === 'object') {
+        appState.currentReport = { ...appState.currentReport, ...draft };
+      }
+    }
+  } catch (e) {
+    console.warn('Draft load error:', e);
+  }
+}
+
+function saveActiveDraft() {
+  try {
+    const r = appState.currentReport;
+    const hasData = r && (
+      r.thana || r.janpad || r.rapatNo || r.subject || r.inquiryFacts ||
+      (r.party1 && r.party1.some(p => p.name || p.address)) ||
+      (r.party2 && r.party2.some(p => p.name || p.address))
+    );
+    if (hasData) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(r));
+    }
+  } catch (e) {
+    console.warn('Draft save error:', e);
+  }
+}
+
+function clearActiveDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch (e) {}
+}
+
 function loadReportsFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      appState.reports = JSON.parse(raw);
+      appState.reports = JSON.parse(raw) || [];
     } else {
-      // Seed with initial sample demo report so user always has reference
-      appState.reports = [
-        {
-          id: 'UPP-BNSS-DEMO-001',
-          createdAt: new Date().toISOString(),
-          thana: 'अमरोहा देहात',
-          janpad: 'अमरोहा',
-          rapatNo: '82',
-          rapatDate: '02/10/26',
-          rapatTime: '14:30 बजे',
-          courtOfficer: 'श्रीमान उपजिला मजिस्ट्रेट महोदय सदर',
-          reportingOfficer: 'उप निरीक्षक इंद्रजीत सिंह',
-          party1: [
-            { name: 'जयकुमार', parentName: 'अमर सिंह', age: '32 वर्ष', address: 'हसनपुर कचिया, थाना अमरोहा देहात, जनपद अमरोहा' }
-          ],
-          party2: [
-            { name: 'बंटी', parentName: 'अमर सिंह', age: '28 वर्ष', address: 'हसनपुर कचिया, थाना अमरोहा देहात, जनपद अमरोहा' }
-          ],
-          subject: 'घर की जमीन के बंटवारे को लेकर विवाद',
-          inquiryFacts: 'दोनों पक्षों में कसीदगी बनी हुई है। दोनों पक्ष कभी भी लड़-झगड़कर शांति व्यवस्था भंग कर सकते हैं।',
-          legalPrayer: 'अतः शांति व्यवस्था की दृष्टिगत पार्टी प्रथम उपरोक्त का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है। अतः श्रीमान जी से निवेदन है कि पार्टी प्रथम उपरोक्त को भारी से भारी धनराशि / मुचलके से पाबंद करने की कृपा करें।',
-          attachments: 'रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क'
-        }
-      ];
-      saveReportsList();
+      appState.reports = [];
     }
     updateSavedBadge();
   } catch (e) {
     console.error('Storage error:', e);
     appState.reports = [];
+  }
+
+  if (!appState.reports || appState.reports.length === 0) {
+    switchMainView('generator');
   }
 }
 
@@ -114,15 +136,15 @@ function switchMainView(viewName) {
   const dashBtn = document.getElementById('nav-btn-dashboard');
 
   if (viewName === 'generator') {
-    genView.style.display = 'flex';
-    dashView.style.display = 'none';
-    genBtn.classList.add('active');
-    dashBtn.classList.remove('active');
+    if (genView) genView.style.display = 'flex';
+    if (dashView) dashView.style.display = 'none';
+    if (genBtn) genBtn.classList.add('active');
+    if (dashBtn) dashBtn.classList.remove('active');
   } else {
-    genView.style.display = 'none';
-    dashView.style.display = 'flex';
-    genBtn.classList.remove('active');
-    dashBtn.classList.add('active');
+    if (genView) genView.style.display = 'none';
+    if (dashView) dashView.style.display = 'flex';
+    if (genBtn) genBtn.classList.remove('active');
+    if (dashBtn) dashBtn.classList.add('active');
     renderDashboard();
   }
 }
@@ -135,15 +157,27 @@ function switchMobileTab(tab) {
   const btnPrev = document.getElementById('mobile-tab-preview');
 
   if (tab === 'form') {
-    formCol.style.display = 'flex';
-    prevCol.style.display = 'none';
-    btnForm.classList.add('active');
-    btnPrev.classList.remove('active');
+    if (formCol) {
+      formCol.classList.remove('mobile-tab-hidden');
+      formCol.classList.add('mobile-tab-active');
+    }
+    if (prevCol) {
+      prevCol.classList.add('mobile-tab-hidden');
+      prevCol.classList.remove('mobile-tab-active');
+    }
+    if (btnForm) btnForm.classList.add('active');
+    if (btnPrev) btnPrev.classList.remove('active');
   } else {
-    formCol.style.display = 'none';
-    prevCol.style.display = 'flex';
-    btnForm.classList.remove('active');
-    btnPrev.classList.add('active');
+    if (formCol) {
+      formCol.classList.add('mobile-tab-hidden');
+      formCol.classList.remove('mobile-tab-active');
+    }
+    if (prevCol) {
+      prevCol.classList.remove('mobile-tab-hidden');
+      prevCol.classList.add('mobile-tab-active');
+    }
+    if (btnForm) btnForm.classList.remove('active');
+    if (btnPrev) btnPrev.classList.add('active');
     syncLivePreview();
   }
 }
@@ -174,24 +208,24 @@ function renderPartyCards(partyNum) {
       <div class="form-grid-2">
         <div class="form-group">
           <label>नाम</label>
-          <input type="text" value="${escapeHtml(person.name || '')}" placeholder="उदा. जयकुमार" 
+          <input type="text" value="${escapeHtml(person.name || '')}" 
             oninput="updatePartyMemberField(${partyNum}, ${index}, 'name', this.value)">
         </div>
         <div class="form-group">
           <label>पिता/पति का नाम</label>
-          <input type="text" value="${escapeHtml(person.parentName || '')}" placeholder="उदा. अमर सिंह" 
+          <input type="text" value="${escapeHtml(person.parentName || '')}" 
             oninput="updatePartyMemberField(${partyNum}, ${index}, 'parentName', this.value)">
         </div>
       </div>
       <div class="form-grid-2">
         <div class="form-group">
           <label>उम्र</label>
-          <input type="text" value="${escapeHtml(person.age || '')}" placeholder="उदा. 32 वर्ष" 
+          <input type="text" value="${escapeHtml(person.age || '')}" 
             oninput="updatePartyMemberField(${partyNum}, ${index}, 'age', this.value)">
         </div>
         <div class="form-group">
           <label>पूरा पता</label>
-          <input type="text" value="${escapeHtml(person.address || '')}" placeholder="उदा. हसनपुर कचिया, थाना अमरोहा देहात" 
+          <input type="text" value="${escapeHtml(person.address || '')}" 
             oninput="updatePartyMemberField(${partyNum}, ${index}, 'address', this.value)">
         </div>
       </div>
@@ -243,76 +277,104 @@ function syncLivePreview() {
   // Update Header & Office in Preview
   setElemText('p-thana-top', r.thana || '________');
   setElemText('p-janpad-top', r.janpad || '________');
-  setElemText('p-court-officer', r.courtOfficer || 'श्रीमान उपजिला मजिस्ट्रेट महोदय सदर');
+  setElemText('p-court-officer', r.courtOfficer || '________________________');
   setElemText('p-janpad-court', r.janpad || '________');
 
-  setElemText('p-reporting-officer', r.reportingOfficer || 'उप निरीक्षक');
+  setElemText('p-reporting-officer', r.reportingOfficer || '________________');
   setElemText('p-thana-officer', r.thana || '________');
   setElemText('p-janpad-officer', r.janpad || '________');
 
   setElemText('p-rapat-no', r.rapatNo || '___');
-  setElemText('p-rapat-date', r.rapatDate || '--/--/----');
+  setElemText('p-rapat-date', (r.rapatDate || '--/--/----') + (r.rapatTime ? ' समय ' + r.rapatTime : ''));
 
   // Format Party 1 in Preview
   const p1Container = document.getElementById('p-party-1-list');
   if (p1Container) {
     p1Container.innerHTML = '';
-    r.party1.forEach((p, idx) => {
+    const hasAnyP1 = (r.party1 || []).some(p => (p.name && p.name.trim()) || (p.parentName && p.parentName.trim()) || (p.age && p.age.trim()) || (p.address && p.address.trim()));
+    if (!hasAnyP1) {
       const row = document.createElement('div');
       row.className = 'party-person-row';
-      let text = `${idx + 1}. ${p.name || '___________'}`;
-      if (p.parentName) text += ` पुत्र/पति ${p.parentName}`;
-      if (p.age) text += ` उम्र करीब ${p.age}`;
-      if (p.address) text += ` निवासी ${p.address}।`;
-      else text += '।';
-      row.innerText = text;
+      row.innerText = '1. __________________________________________________';
       p1Container.appendChild(row);
-    });
+    } else {
+      (r.party1 || []).forEach((p, idx) => {
+        const isPersonEmpty = !p.name && !p.parentName && !p.age && !p.address;
+        const row = document.createElement('div');
+        row.className = 'party-person-row';
+        if (isPersonEmpty) {
+          row.innerText = `${idx + 1}. __________________________________________________`;
+        } else {
+          let text = `${idx + 1}. ${p.name || '___________'}`;
+          if (p.parentName) text += ` पुत्र/पति ${p.parentName}`;
+          if (p.age) text += ` उम्र करीब ${p.age}`;
+          if (p.address) text += ` निवासी ${p.address}।`;
+          else text += '।';
+          row.innerText = text;
+        }
+        p1Container.appendChild(row);
+      });
+    }
   }
 
   // Format Party 2 in Preview
   const p2Container = document.getElementById('p-party-2-list');
   if (p2Container) {
     p2Container.innerHTML = '';
-    r.party2.forEach((p, idx) => {
+    const hasAnyP2 = (r.party2 || []).some(p => (p.name && p.name.trim()) || (p.parentName && p.parentName.trim()) || (p.age && p.age.trim()) || (p.address && p.address.trim()));
+    if (!hasAnyP2) {
       const row = document.createElement('div');
       row.className = 'party-person-row';
-      let text = `${idx + 1}. ${p.name || '___________'}`;
-      if (p.parentName) text += ` पुत्र/पति ${p.parentName}`;
-      if (p.age) text += ` उम्र करीब ${p.age}`;
-      if (p.address) text += ` निवासी ${p.address}।`;
-      else text += '।';
-      row.innerText = text;
+      row.innerText = '1. __________________________________________________';
       p2Container.appendChild(row);
-    });
+    } else {
+      (r.party2 || []).forEach((p, idx) => {
+        const isPersonEmpty = !p.name && !p.parentName && !p.age && !p.address;
+        const row = document.createElement('div');
+        row.className = 'party-person-row';
+        if (isPersonEmpty) {
+          row.innerText = `${idx + 1}. __________________________________________________`;
+        } else {
+          let text = `${idx + 1}. ${p.name || '___________'}`;
+          if (p.parentName) text += ` पुत्र/पति ${p.parentName}`;
+          if (p.age) text += ` उम्र करीब ${p.age}`;
+          if (p.address) text += ` निवासी ${p.address}।`;
+          else text += '।';
+          row.innerText = text;
+        }
+        p2Container.appendChild(row);
+      });
+    }
   }
 
   // Comma separated party names for the narrative paragraph
-  const p1Names = r.party1.map(p => p.name).filter(Boolean).join(', ') || 'पार्टी प्रथम';
-  const p2Names = r.party2.map(p => p.name).filter(Boolean).join(', ') || 'पार्टी द्वितीय';
+  const p1Names = (r.party1 || []).map(p => p.name).filter(Boolean).join(', ') || '________________';
+  const p2Names = (r.party2 || []).map(p => p.name).filter(Boolean).join(', ') || '________________';
   setElemText('p-party1-names', p1Names);
   setElemText('p-party2-names', p2Names);
 
   // Extract rank/designation from reporting officer if present
-  let rankText = 'उप निरीक्षक';
+  let rankText = '';
   if (r.reportingOfficer) {
     if (r.reportingOfficer.includes('उप निरीक्षक') || r.reportingOfficer.includes('उ०नि०')) rankText = 'उप निरीक्षक';
     else if (r.reportingOfficer.includes('थाना प्रभारी') || r.reportingOfficer.includes('प्रभारी निरीक्षक')) rankText = 'प्रभारी निरीक्षक';
     else if (r.reportingOfficer.includes('मुख्य आरक्षी') || r.reportingOfficer.includes('हेड कांस्टेबल')) rankText = 'मुख्य आरक्षी';
     else if (r.reportingOfficer.includes('आरक्षी') || r.reportingOfficer.includes('कांस्टेबल')) rankText = 'आरक्षी';
+    else rankText = r.reportingOfficer;
   }
-  setElemText('p-reporting-by', rankText);
+  setElemText('p-reporting-by', rankText || '________________');
 
   // Narrative elements
-  setElemText('p-subject', r.subject || 'घर की जमीन के बंटवारे को लेकर विवाद');
-  setElemText('p-inquiry-facts', r.inquiryFacts || 'दोनों पक्षों में कसीदगी बनी हुई है। दोनों पक्ष कभी भी लड़-झगड़कर शांति व्यवस्था भंग कर सकते हैं।');
-  setElemText('p-legal-prayer', r.legalPrayer || 'अतः शांति व्यवस्था की दृष्टिगत पार्टी प्रथम उपरोक्त का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है।');
-  setElemText('p-attachments', r.attachments || 'रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क');
+  setElemText('p-subject', r.subject || '________________________________');
+  setElemText('p-inquiry-facts', r.inquiryFacts || '________________________________________________________________________________');
+  setElemText('p-legal-prayer', r.legalPrayer || '________________________________________________________________________________');
+  setElemText('p-attachments', r.attachments || '________________________');
 
   // Signatures
-  setElemText('p-sig-officer', r.reportingOfficer || 'उप निरीक्षक');
+  setElemText('p-sig-officer', r.reportingOfficer || '________________');
   setElemText('p-sig-thana', r.thana || '________');
   setElemText('p-sig-janpad', r.janpad || '________');
+  saveActiveDraft();
 }
 
 function setElemText(id, text) {
@@ -431,41 +493,6 @@ function startVoiceInput() {
   }
 }
 
-/* ================= DEMO DATA LOADER ================= */
-function loadDemoData() {
-  appState.editingReportId = null;
-  appState.currentReport = {
-    thana: 'अमरोहा देहात',
-    janpad: 'अमरोहा',
-    rapatNo: '82',
-    rapatDate: '02/10/26',
-    rapatTime: '14:30 बजे',
-    courtOfficer: 'श्रीमान उपजिला मजिस्ट्रेट महोदय सदर',
-    reportingOfficer: 'उप निरीक्षक इंद्रजीत सिंह',
-    party1: [
-      { name: 'जयकुमार', parentName: 'अमर सिंह', age: '32 वर्ष', address: 'हसनपुर कचिया, थाना अमरोहा देहात, जनपद अमरोहा' }
-    ],
-    party2: [
-      { name: 'बंटी', parentName: 'अमर सिंह', age: '28 वर्ष', address: 'हसनपुर कचिया, थाना अमरोहा देहात, जनपद अमरोहा' }
-    ],
-    subject: 'घर की जमीन के बंटवारे को लेकर विवाद',
-    inquiryFacts: 'दोनों पक्षों में कसीदगी बनी हुई है। दोनों पक्ष कभी भी लड़-झगड़कर शांति व्यवस्था भंग कर सकते हैं।',
-    legalPrayer: 'अतः शांति व्यवस्था की दृष्टिगत पार्टी प्रथम उपरोक्त का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है। अतः श्रीमान जी से निवेदन है कि पार्टी प्रथम उपरोक्त को भारी से भारी धनराशि / मुचलके से पाबंद करने की कृपा करें।',
-    attachments: 'रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क'
-  };
-
-  populateFormFromState();
-  renderPartyCards(1);
-  renderPartyCards(2);
-  syncLivePreview();
-  showToast('अमरोहा देहात डेमो केस लोड किया गया ⚡', 'success');
-}
-
-function loadDemoDataAndSwitch() {
-  loadDemoData();
-  switchMainView('generator');
-}
-
 function startNewReportAndSwitch() {
   resetForm();
   switchMainView('generator');
@@ -484,18 +511,19 @@ function resetForm() {
     thana: '',
     janpad: '',
     rapatNo: '',
-    rapatDate: new Date().toLocaleDateString('hi-IN'),
+    rapatDate: '',
     rapatTime: '',
-    courtOfficer: 'श्रीमान उपजिला मजिस्ट्रेट महोदय',
+    courtOfficer: '',
     reportingOfficer: '',
     party1: [{ name: '', parentName: '', age: '', address: '' }],
     party2: [{ name: '', parentName: '', age: '', address: '' }],
     subject: '',
     inquiryFacts: '',
-    legalPrayer: 'अतः शांति व्यवस्था की दृष्टिगत दोनों पक्षों का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है। अतः श्रीमान जी से निवेदन है कि उपरोक्त को भारी से भारी धनराशि / मुचलके से पाबंद करने की कृपा करें।',
-    attachments: 'रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क'
+    legalPrayer: '',
+    attachments: ''
   };
 
+  clearActiveDraft();
   populateFormFromState();
   renderPartyCards(1);
   renderPartyCards(2);
@@ -587,7 +615,7 @@ function renderDashboard() {
   if (sortOrder === 'oldest') {
     filtered.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
   } else if (sortOrder === 'rapat') {
-    filtered.sort((a, b) => (parseInt(a.rapatNo) || 0) - (parseInt(b.rapatNo) || 0));
+    filtered.sort((a, b) => (parseInt(a.rapatNo, 10) || 0) - (parseInt(b.rapatNo, 10) || 0));
   } else {
     // newest first
     filtered.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -636,19 +664,19 @@ function renderDashboard() {
         </td>
         <td>
           <div class="table-actions">
-            <button type="button" class="action-btn-sm" onclick="viewSavedReport('${r.id}')" title="दस्तावेज़ देखें">
+            <button type="button" class="action-btn-sm" data-action="view" data-id="${escapeHtml(r.id)}" title="दस्तावेज़ देखें">
               👁️ देखें
             </button>
-            <button type="button" class="action-btn-sm" onclick="editSavedReport('${r.id}')" title="संपादित करें">
+            <button type="button" class="action-btn-sm" data-action="edit" data-id="${escapeHtml(r.id)}" title="संपादित करें">
               ✏️ एडिट
             </button>
-            <button type="button" class="action-btn-sm" onclick="printSavedReportDirect('${r.id}')" title="सीधा प्रिंट / PDF">
+            <button type="button" class="action-btn-sm" data-action="print" data-id="${escapeHtml(r.id)}" title="सीधा प्रिंट / PDF">
               🖨️ प्रिंट
             </button>
-            <button type="button" class="action-btn-sm" onclick="cloneSavedReport('${r.id}')" title="कॉपी करके नई बनाएं">
+            <button type="button" class="action-btn-sm" data-action="clone" data-id="${escapeHtml(r.id)}" title="कॉपी करके नई बनाएं">
               📋 कॉपी
             </button>
-            <button type="button" class="action-btn-sm action-btn-delete" onclick="deleteSavedReport('${r.id}')" title="हटाएं">
+            <button type="button" class="action-btn-sm action-btn-delete" data-action="delete" data-id="${escapeHtml(r.id)}" title="हटाएं">
               🗑️
             </button>
           </div>
@@ -656,6 +684,19 @@ function renderDashboard() {
       `;
       tbody.appendChild(tr);
     });
+
+    // Delegated safe click handler
+    tbody.onclick = (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'view') viewSavedReport(id);
+      else if (action === 'edit') editSavedReport(id);
+      else if (action === 'print') printSavedReportDirect(id);
+      else if (action === 'clone') cloneSavedReport(id);
+      else if (action === 'delete') deleteSavedReport(id);
+    };
   }
 }
 
@@ -685,7 +726,7 @@ function cloneSavedReport(id) {
   appState.editingReportId = null; // fresh new
   appState.currentReport = JSON.parse(JSON.stringify(item));
   appState.currentReport.rapatNo = ''; // leave rapat blank to assign new
-  appState.currentReport.rapatDate = new Date().toLocaleDateString('hi-IN');
+  appState.currentReport.rapatDate = formatDateDDMMYY();
   populateFormFromState();
   renderPartyCards(1);
   renderPartyCards(2);
@@ -731,11 +772,21 @@ function viewSavedReport(id) {
 
 function closePreviewModal() {
   document.getElementById('preview-modal').style.display = 'none';
+  document.body.classList.remove('printing-modal');
 }
 
 function printModalReport() {
+  document.body.classList.add('printing-modal');
   window.print();
+  setTimeout(() => {
+    document.body.classList.remove('printing-modal');
+  }, 500);
 }
+
+// Clean up printing class after print dialog closes
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing-modal');
+});
 
 function printSavedReportDirect(id) {
   editSavedReport(id);
@@ -744,20 +795,54 @@ function printSavedReportDirect(id) {
   }, 200);
 }
 
+/* ================= AUTO-SAVE HELPER ================= */
+function autoSaveCurrentReportSilently() {
+  syncLivePreview();
+  const r = appState.currentReport;
+  const p1HasName = (r.party1 || []).some(p => p.name && p.name.trim());
+  const p2HasName = (r.party2 || []).some(p => p.name && p.name.trim());
+  const hasData = (r.thana && r.thana.trim()) || (r.rapatNo && r.rapatNo.trim()) || p1HasName || p2HasName;
+
+  if (!hasData) return;
+
+  if (appState.editingReportId) {
+    const index = appState.reports.findIndex(item => item.id === appState.editingReportId);
+    if (index !== -1) {
+      appState.reports[index] = {
+        ...JSON.parse(JSON.stringify(r)),
+        id: appState.editingReportId,
+        updatedAt: new Date().toISOString()
+      };
+      saveReportsList();
+    }
+  } else {
+    const newReport = {
+      ...JSON.parse(JSON.stringify(r)),
+      id: 'UPP-BNSS-' + Date.now(),
+      createdAt: new Date().toISOString()
+    };
+    appState.reports.unshift(newReport);
+    appState.editingReportId = newReport.id;
+    saveReportsList();
+  }
+}
+
 /* ================= PRINT / PDF GENERATION ================= */
 function printReportDocument() {
+  autoSaveCurrentReportSilently();
   syncLivePreview();
   // Native high-fidelity browser print with @media print stylesheet
   window.print();
 }
 
 function downloadPdfDirect() {
+  autoSaveCurrentReportSilently();
   syncLivePreview();
   const element = document.getElementById('printable-report');
   if (!element) return;
   const r = appState.currentReport;
-  const safeThana = (r.thana || 'अमरोहा').replace(/[\s/\\?%*:|"<>]/g, '_');
-  const safeRapat = (r.rapatNo || '82').replace(/[\s/\\?%*:|"<>]/g, '_');
+  const safeThana = (r.thana || 'चलानी').replace(/[\s/\\?%*:|"<>]/g, '_');
+  const safeRapat = (r.rapatNo || 'रिपोर्ट').replace(/[\s/\\?%*:|"<>]/g, '_');
   const fileName = `चलानी_रिपोर्ट_रपट_${safeRapat}_थाना_${safeThana}.pdf`;
 
   if (typeof html2pdf !== 'undefined') {
@@ -785,17 +870,28 @@ function copyReportText() {
   syncLivePreview();
   const r = appState.currentReport;
 
-  const p1Text = r.party1.map((p, i) => `${i + 1}. ${p.name || ''} पुत्र/पति ${p.parentName || ''} उम्र करीब ${p.age || ''} निवासी ${p.address || ''}`).join('\n');
-  const p2Text = r.party2.map((p, i) => `${i + 1}. ${p.name || ''} पुत्र/पति ${p.parentName || ''} उम्र करीब ${p.age || ''} निवासी ${p.address || ''}`).join('\n');
+  const p1Text = (r.party1 || []).map((p, i) => `${i + 1}. ${p.name || ''} पुत्र/पति ${p.parentName || ''} उम्र करीब ${p.age || ''} निवासी ${p.address || ''}`).join('\n');
+  const p2Text = (r.party2 || []).map((p, i) => `${i + 1}. ${p.name || ''} पुत्र/पति ${p.parentName || ''} उम्र करीब ${p.age || ''} निवासी ${p.address || ''}`).join('\n');
+
+  const p1Names = (r.party1 || []).map(p => p.name).filter(Boolean).join(', ') || '________________';
+  const p2Names = (r.party2 || []).map(p => p.name).filter(Boolean).join(', ') || '________________';
+
+  let subjectClause = r.subject ? r.subject.trim() : 'आपसी विवाद';
+  if (!subjectClause.includes('विवाद') && !subjectClause.endsWith('है')) {
+    subjectClause += ' को लेकर विवाद';
+  }
+  const subjectEnding = subjectClause.endsWith('है') ? '' : ' है';
+
+  const rapatDateTime = `${r.rapatDate ? r.rapatDate : '--/--/----'}${r.rapatTime ? ' समय ' + r.rapatTime : ''}`;
 
   const textToCopy = `रिपोर्ट चलानी अंतर्गत धारा 126/135 BNSS
-थाना ${r.thana}, जनपद ${r.janpad}
+थाना ${r.thana || '________'}, जनपद ${r.janpad || '________'}
 
 सेवा में,
-${r.courtOfficer},
-जनपद ${r.janpad}।
+${r.courtOfficer || '________________________'},
+जनपद ${r.janpad || '________'}।
 
-द्वारा: ${r.reportingOfficer}, थाना ${r.thana}, जनपद ${r.janpad}।
+द्वारा: ${r.reportingOfficer || '________________'}, थाना ${r.thana || '________'}, जनपद ${r.janpad || '________'}।
 
 बनाम पार्टी प्रथम:
 ${p1Text}
@@ -804,20 +900,20 @@ ${p1Text}
 ${p2Text}
 
 महोदय,
-निवेदन इस प्रकार है कि थाना हाजा पर अंकित बीट सूचना रपट नंबर ${r.rapatNo} दिनांक ${r.rapatDate} की जांच मुझ ${r.reportingOfficer} द्वारा की गई तो पाया गया कि पार्टी प्रथम ${r.party1.map(p => p.name).join(', ')} के मध्य पार्टी द्वितीय ${r.party2.map(p => p.name).join(', ')} दोनों पक्षों में ${r.subject} को लेकर विवाद है।
+निवेदन इस प्रकार है कि थाना हाजा पर अंकित बीट सूचना रपट नंबर ${r.rapatNo || '___'} दिनांक ${rapatDateTime} की जांच मुझ ${r.reportingOfficer || '________________'} द्वारा की गई तो पाया गया कि पार्टी प्रथम ${p1Names} के मध्य पार्टी द्वितीय ${p2Names} दोनों पक्षों में ${subjectClause}${subjectEnding}।
 
-${r.inquiryFacts}
+${r.inquiryFacts || ''}
 
-${r.legalPrayer}
+${r.legalPrayer || ''}
 
 रिपोर्ट चलानी सादर सेवा में प्रेषित है।
 
 संलग्नक:
-${r.attachments}
+${r.attachments || ''}
 
-( ${r.reportingOfficer} )
-थाना ${r.thana}
-जनपद ${r.janpad}`;
+( ${r.reportingOfficer || '________________'} )
+थाना ${r.thana || '________'}
+जनपद ${r.janpad || '________'}`;
 
   navigator.clipboard.writeText(textToCopy).then(() => {
     showToast('संपूर्ण रिपोर्ट का पाठ क्लिपबोर्ड में कॉपी कर लिया गया 📋', 'success');
@@ -879,4 +975,99 @@ function showToast(message, type = 'info') {
     toast.style.transform = 'translateY(10px)';
     setTimeout(() => toast.remove(), 300);
   }, 3200);
+}
+
+/* ================= DATE NORMALIZATION ================= */
+function formatDateDDMMYY(input) {
+  let dateObj;
+  if (!input) {
+    dateObj = new Date();
+  } else if (input instanceof Date) {
+    dateObj = input;
+  } else if (typeof input === 'string') {
+    if (/^\d{2}\/\d{2}\/\d{2}$/.test(input)) {
+      return input;
+    }
+    dateObj = new Date(input);
+  } else if (typeof input === 'number') {
+    dateObj = new Date(input);
+  } else {
+    dateObj = new Date();
+  }
+
+  if (isNaN(dateObj.getTime())) {
+    dateObj = new Date();
+  }
+
+  const dd = String(dateObj.getDate()).padStart(2, '0');
+  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const yy = String(dateObj.getFullYear()).slice(-2);
+
+  return `${dd}/${mm}/${yy}`;
+}
+
+/* ================= CCTNS CSV EXPORT ================= */
+function exportCCTNSCsv() {
+  if (!appState.reports || appState.reports.length === 0) {
+    showToast('CCTNS रजिस्टर हेतु कोई रिपोर्ट उपलब्ध नहीं है', 'error');
+    return;
+  }
+
+  const BOM = '\uFEFF';
+  const headers = [
+    'क्र०',
+    'रपट सं०',
+    'रपट दिनांक',
+    'थाना',
+    'जनपद',
+    'पार्टी प्रथम (नाम व विवरण)',
+    'पार्टी द्वितीय (नाम व विवरण)',
+    'विवाद का विषय',
+    'जांच में पाए गए तथ्य',
+    'प्रस्तावित विधिक कार्यवाही'
+  ];
+
+  const escapeCsv = (val) => {
+    if (val === null || val === undefined) return '""';
+    let str = String(val).trim();
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = "'" + str; // Formula injection defense
+    }
+    return `"${str.replace(/"/g, '""')}"`;
+  };
+
+  const rows = appState.reports.map((r, index) => {
+    const p1Formatted = (r.party1 || [])
+      .map((p, i) => `${i + 1}. ${p.name || ''} पुत्र/पति ${p.parentName || ''} उम्र ${p.age || ''} निवासी ${p.address || ''}`.trim())
+      .join('; ');
+
+    const p2Formatted = (r.party2 || [])
+      .map((p, i) => `${i + 1}. ${p.name || ''} पुत्र/पति ${p.parentName || ''} उम्र ${p.age || ''} निवासी ${p.address || ''}`.trim())
+      .join('; ');
+
+    return [
+      escapeCsv(index + 1),
+      escapeCsv(r.rapatNo || ''),
+      escapeCsv(r.rapatDate || ''),
+      escapeCsv(r.thana || ''),
+      escapeCsv(r.janpad || ''),
+      escapeCsv(p1Formatted),
+      escapeCsv(p2Formatted),
+      escapeCsv(r.subject || ''),
+      escapeCsv(r.inquiryFacts || ''),
+      escapeCsv(r.legalPrayer || '')
+    ].join(',');
+  });
+
+  const csvContent = BOM + [headers.map(h => `"${h}"`).join(','), ...rows].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.href = url;
+  downloadAnchor.download = `UPP_BNSS_126_135_Register_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  URL.revokeObjectURL(url);
+  showToast('CCTNS मासिक रजिस्टर (CSV) डाउनलोड हो गया ✅', 'success');
 }

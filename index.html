@@ -13,6 +13,13 @@
   
   <link rel="stylesheet" href="app.css">
   
+  <!-- PWA Manifest & Mobile Styling -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#002147">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/up_police_logo_512.png">
+  
   <!-- Offline-ready html2pdf library -->
   <script src="assets/libs/html2pdf.bundle.min.js"></script>
 </head>
@@ -50,11 +57,6 @@
             <span>पूर्व रिपोर्ट्स (<span id="saved-count-badge">0</span>)</span>
           </button>
         </nav>
-
-        <div class="operator-status">
-          <span class="status-indicator"></span>
-          <span class="status-text">ऑनलाइन / ऑफलाइन सुरक्षित</span>
-        </div>
       </div>
     </div>
   </header>
@@ -68,15 +70,6 @@
         <p>सिस्टम में सुरक्षित सभी धारा 126/135 BNSS रिपोर्टों का विवरण, त्वरित खोज एवं प्रबंधन</p>
       </div>
       <div class="dash-top-actions">
-        <button class="btn btn-outline" onclick="exportReportsBackup()">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          <span>डेटा बैकअप (JSON)</span>
-        </button>
-        <label class="btn btn-outline file-btn-label">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-          <span>बैकअप रिस्टोर</span>
-          <input type="file" id="restore-input" accept=".json" onchange="importReportsBackup(event)" style="display:none;">
-        </label>
         <button class="btn btn-primary" onclick="startNewReportAndSwitch()">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           <span>+ नई रिपोर्ट तैयार करें</span>
@@ -84,43 +77,11 @@
       </div>
     </div>
 
-    <!-- Quick Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon bg-blue-soft">📋</div>
-        <div class="stat-data">
-          <span class="stat-value" id="stat-total-reports">0</span>
-          <span class="stat-label">कुल सुरक्षित रिपोर्ट्स</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon bg-amber-soft">⚖️</div>
-        <div class="stat-data">
-          <span class="stat-value" id="stat-sdm-reports">0</span>
-          <span class="stat-label">एसडीएम न्यायालय प्रेषित</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon bg-green-soft">👮</div>
-        <div class="stat-data">
-          <span class="stat-value" id="stat-thana-count">0</span>
-          <span class="stat-label">सक्रिय थाने</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon bg-purple-soft">👥</div>
-        <div class="stat-data">
-          <span class="stat-value" id="stat-pabandi-persons">0</span>
-          <span class="stat-label">पाबंद हेतु कुल व्यक्ति</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Filter & Search Toolbar -->
     <div class="filter-toolbar">
       <div class="search-box">
         <svg class="icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" id="dash-search-input" placeholder="खोजें: रपट संख्या, पक्षकार का नाम, थाना, दिनांक या विवाद..." oninput="filterReportsList()">
+        <input type="text" id="dash-search-input" oninput="filterReportsList()">
       </div>
       <div class="filter-controls">
         <select id="dash-filter-thana" onchange="filterReportsList()">
@@ -158,9 +119,9 @@
         <div class="empty-icon">📂</div>
         <h3>कोई रिपोर्ट उपलब्ध नहीं है</h3>
         <p>आपने अभी तक कोई चलानी रिपोर्ट सुरक्षित नहीं की है या खोज परिणाम रिक्त हैं।</p>
-        <button class="btn btn-primary" onclick="loadDemoDataAndSwitch()">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          <span>डेमो रिपोर्ट लोड करें</span>
+        <button class="btn btn-primary" onclick="startNewReportAndSwitch()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span>+ नई रिपोर्ट तैयार करें</span>
         </button>
       </div>
     </div>
@@ -184,16 +145,6 @@
       
       <!-- Quick Action Floating Bar -->
       <div class="form-action-bar">
-        <button type="button" class="action-btn btn-demo" onclick="loadDemoData()" title="अमरोहा देहात डेमो केस लोड करें">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-          <span>⚡ डेमो डेटा</span>
-        </button>
-
-        <button type="button" class="action-btn btn-save" onclick="saveReportToStorage()" title="वर्तमान रिपोर्ट सुरक्षित करें">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-          <span>💾 सुरक्षित करें</span>
-        </button>
-
         <button type="button" class="action-btn btn-print" onclick="printReportDocument()" title="दस्तावेज प्रिंट या PDF में सहेजें">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
           <span>🖨️ प्रिंट</span>
@@ -227,37 +178,37 @@
           <div class="form-grid-2">
             <div class="form-group">
               <label for="f-thana">थाना (Police Station) <span class="req">*</span></label>
-              <input type="text" id="f-thana" placeholder="उदा. अमरोहा देहात" required oninput="syncLivePreview()">
+              <input type="text" id="f-thana" required oninput="syncLivePreview()">
             </div>
             <div class="form-group">
               <label for="f-janpad">जनपद (District) <span class="req">*</span></label>
-              <input type="text" id="f-janpad" placeholder="उदा. अमरोहा" required oninput="syncLivePreview()">
+              <input type="text" id="f-janpad" required oninput="syncLivePreview()">
             </div>
           </div>
 
           <div class="form-grid-3">
             <div class="form-group">
               <label for="f-rapat-no">बीट सूचना रपट संख्या <span class="req">*</span></label>
-              <input type="text" id="f-rapat-no" placeholder="उदा. 82" required oninput="syncLivePreview()">
+              <input type="text" id="f-rapat-no" required oninput="syncLivePreview()">
             </div>
             <div class="form-group">
               <label for="f-rapat-date">रपट दिनांक <span class="req">*</span></label>
-              <input type="text" id="f-rapat-date" placeholder="उदा. 02/10/26" required oninput="syncLivePreview()">
+              <input type="text" id="f-rapat-date" required oninput="syncLivePreview()">
             </div>
             <div class="form-group">
               <label for="f-rapat-time">रपट समय (यदि कोई हो)</label>
-              <input type="text" id="f-rapat-time" placeholder="उदा. 14:30 बजे" oninput="syncLivePreview()">
+              <input type="text" id="f-rapat-time" oninput="syncLivePreview()">
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
               <label for="f-court-officer">सेवा में अधिकारी (Addressed To) <span class="req">*</span></label>
-              <input type="text" id="f-court-officer" placeholder="उदा. श्रीमान उपजिला मजिस्ट्रेट महोदय सदर" required oninput="syncLivePreview()">
+              <input type="text" id="f-court-officer" required oninput="syncLivePreview()">
             </div>
             <div class="form-group">
               <label for="f-reporting-officer">रिपोर्टिंग अधिकारी (नाम व पद) <span class="req">*</span></label>
-              <input type="text" id="f-reporting-officer" placeholder="उदा. उप निरीक्षक इंद्रजीत सिंह" required oninput="syncLivePreview()">
+              <input type="text" id="f-reporting-officer" required oninput="syncLivePreview()">
             </div>
           </div>
         </fieldset>
@@ -320,7 +271,7 @@
 
           <div class="form-group">
             <label for="f-subject">विवाद का विषय <span class="req">*</span></label>
-            <input type="text" id="f-subject" placeholder="उदा. घर की जमीन के बंटवारे को लेकर विवाद" required oninput="syncLivePreview()">
+            <input type="text" id="f-subject" required oninput="syncLivePreview()">
           </div>
 
           <div class="form-group">
@@ -330,7 +281,7 @@
                 🎙️ वॉइस बोलें
               </button>
             </div>
-            <textarea id="f-inquiry-facts" rows="4" placeholder="उदा. दोनों पक्षों में कसीदगी बनी हुई है। दोनों पक्ष कभी भी लड़-झगड़कर शांति व्यवस्था भंग कर सकते हैं।" required oninput="syncLivePreview()"></textarea>
+            <textarea id="f-inquiry-facts" rows="4" required oninput="syncLivePreview()"></textarea>
           </div>
 
           <!-- Challan Target Selector -->
@@ -345,21 +296,17 @@
 
           <div class="form-group">
             <label for="f-legal-prayer">प्रस्तावित कार्यवाही / निवेदन <span class="req">*</span></label>
-            <textarea id="f-legal-prayer" rows="4" placeholder="अतः शांति व्यवस्था की दृष्टिगत पार्टी प्रथम व द्वितीय का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है। अतः श्रीमान जी से निवेदन है कि उपरोक्त को भारी से भारी धनराशि / मुचलके से पाबंद करने की कृपा करें।" required oninput="syncLivePreview()"></textarea>
+            <textarea id="f-legal-prayer" rows="4" required oninput="syncLivePreview()"></textarea>
           </div>
 
           <div class="form-group">
             <label for="f-attachments">संलग्नक (Attachments)</label>
-            <input type="text" id="f-attachments" placeholder="उदा. रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क" oninput="syncLivePreview()">
+            <input type="text" id="f-attachments" oninput="syncLivePreview()">
           </div>
         </fieldset>
 
         <!-- Bottom Form Buttons -->
         <div class="form-footer-buttons">
-          <button type="button" class="btn btn-success btn-lg" onclick="saveReportToStorage()">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            <span>✓ रिपोर्ट सुरक्षित करें</span>
-          </button>
           <button type="button" class="btn btn-primary btn-lg" onclick="printReportDocument()">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             <span>🖨️ प्रिंट निकालें</span>
@@ -391,7 +338,7 @@
             <span>PDF डाउनलोड</span>
           </button>
           <button type="button" class="btn btn-sm btn-primary" onclick="printReportDocument()">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z"/></svg>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             <span>प्रिंट A4</span>
           </button>
         </div>
@@ -410,7 +357,7 @@
           <header class="doc-header">
             <div class="doc-header-center">
               <h1 class="doc-main-heading">रिपोर्ट चलानी अंतर्गत धारा 126/135 BNSS</h1>
-              <h2 class="doc-station-heading">थाना <span id="p-thana-top">अमरोहा देहात</span>, जनपद <span id="p-janpad-top">अमरोहा</span></h2>
+              <h2 class="doc-station-heading">थाना <span id="p-thana-top">________</span>, जनपद <span id="p-janpad-top">________</span></h2>
             </div>
           </header>
 
@@ -418,16 +365,16 @@
           <section class="doc-section doc-recipient-block">
             <div class="recipient-line"><strong>सेवा में,</strong></div>
             <div class="recipient-body">
-              <span id="p-court-officer">श्रीमान उपजिला मजिस्ट्रेट महोदय सदर</span>,<br>
-              जनपद <span id="p-janpad-court">अमरोहा</span>।
+              <span id="p-court-officer">________________________</span>,<br>
+              जनपद <span id="p-janpad-court">________</span>।
             </div>
           </section>
 
           <!-- Reporting Officer Block -->
           <section class="doc-section doc-officer-block">
             <div class="officer-line">
-              <strong>द्वारा</strong> <span id="p-reporting-officer">उप निरीक्षक इंद्रजीत सिंह</span>, 
-              थाना <span id="p-thana-officer">अमरोहा देहात</span>, जनपद <span id="p-janpad-officer">अमरोहा</span>।
+              <strong>द्वारा</strong> <span id="p-reporting-officer">________________</span>, 
+              थाना <span id="p-thana-officer">________</span>, जनपद <span id="p-janpad-officer">________</span>।
             </div>
           </section>
 
@@ -435,7 +382,7 @@
           <section class="doc-section doc-party1-block">
             <div class="party-heading"><strong>बनाम पार्टी प्रथम</strong></div>
             <div class="party-persons-list" id="p-party-1-list">
-              <!-- Dynamically populated -->
+              <div class="party-person-row">1. __________________________________________________</div>
             </div>
           </section>
 
@@ -443,7 +390,7 @@
           <section class="doc-section doc-party2-block">
             <div class="party-heading"><strong>पार्टी द्वितीय</strong></div>
             <div class="party-persons-list" id="p-party-2-list">
-              <!-- Dynamically populated -->
+              <div class="party-person-row">1. __________________________________________________</div>
             </div>
           </section>
 
@@ -451,19 +398,19 @@
           <section class="doc-section doc-narrative-block">
             <p class="narrative-p">
               <strong>महोदय,</strong> निवेदन इस प्रकार है कि थाना हाजा पर अंकित बीट सूचना रपट नंबर 
-              <strong id="p-rapat-no">82</strong> दिनांक <strong id="p-rapat-date">02/10/26</strong> 
-              की जांच मुझ <span id="p-reporting-by">उप निरीक्षक</span> द्वारा की गई तो पाया गया कि 
-              पार्टी प्रथम <span id="p-party1-names">जयकुमार</span> के मध्य 
-              पार्टी द्वितीय <span id="p-party2-names">बंटी</span> दोनों पक्षों में 
-              <span id="p-subject">घर की जमीन के बंटवारे को लेकर विवाद</span> है।
+              <strong id="p-rapat-no">___</strong> दिनांक <strong id="p-rapat-date">--/--/----</strong> 
+              की जांच मुझ <span id="p-reporting-by">________________</span> द्वारा की गई तो पाया गया कि 
+              पार्टी प्रथम <span id="p-party1-names">________________</span> के मध्य 
+              पार्टी द्वितीय <span id="p-party2-names">________________</span> दोनों पक्षों में 
+              <span id="p-subject">________________________________</span> है।
             </p>
 
             <p class="narrative-facts" id="p-inquiry-facts">
-              दोनों पक्षों में कसीदगी बनी हुई है। दोनों पक्ष कभी भी लड़-झगड़कर शांति व्यवस्था भंग कर सकते हैं।
+              ________________________________________________________________________________
             </p>
 
             <p class="narrative-prayer" id="p-legal-prayer">
-              अतः शांति व्यवस्था की दृष्टिगत पार्टी प्रथम उपरोक्त का चालान अंतर्गत धारा 126/135 BNSS माननीय न्यायालय किया जा रहा है। अतः श्रीमान जी से निवेदन है कि पार्टी प्रथम उपरोक्त को भारी से भारी धनराशि / मुचलके से पाबंद करने की कृपा करें।
+              ________________________________________________________________________________
             </p>
 
             <p class="narrative-closing">
@@ -475,7 +422,7 @@
           <section class="doc-section doc-attachments-block">
             <div class="att-title"><strong>संलग्नक:</strong></div>
             <div class="att-content" id="p-attachments">
-              रिपोर्ट चलानी एक बार, नकल रपट नंबर एक वर्क
+              ________________________
             </div>
           </section>
 
@@ -483,9 +430,9 @@
           <section class="doc-signature-section">
             <div class="sig-container">
               <div class="sig-inner">
-                <div class="sig-name">( <span id="p-sig-officer">उप निरीक्षक इंद्रजीत सिंह</span> )</div>
-                <div class="sig-thana">थाना <span id="p-sig-thana">अमरोहा देहात</span></div>
-                <div class="sig-janpad">जनपद <span id="p-sig-janpad">अमरोहा</span></div>
+                <div class="sig-name">( <span id="p-sig-officer">________________</span> )</div>
+                <div class="sig-thana">थाना <span id="p-sig-thana">________</span></div>
+                <div class="sig-janpad">जनपद <span id="p-sig-janpad">________</span></div>
               </div>
             </div>
           </section>
@@ -502,7 +449,7 @@
         <h3>रिपोर्ट पूर्वावलोकन (दस्तावेज़)</h3>
         <div class="modal-actions">
           <button class="btn btn-sm btn-primary" onclick="printModalReport()">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z"/></svg>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             <span>🖨️ प्रिंट / PDF</span>
           </button>
           <button class="btn-close" onclick="closePreviewModal()">&times;</button>
@@ -519,5 +466,16 @@
 
   <!-- Application Logic -->
   <script src="app.js"></script>
+
+  <!-- Service Worker Registration for PWA Offline Support -->
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('UP Police PWA ServiceWorker Registered:', reg.scope))
+          .catch(err => console.log('ServiceWorker registration failed:', err));
+      });
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+{
+  "name": "धारा 126/135 BNSS — चलानी रिपोर्ट",
+  "short_name": "BNSS 126/135",
+  "description": "उत्तर प्रदेश पुलिस - धारा 126/135 BNSS चलानी रिपोर्ट डिजिटल जनरेटर एवं रिकॉर्ड प्रबंधन",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#002147",
+  "theme_color": "#002147",
+  "icons": [
+    {
+      "src": "assets/up_police_logo_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

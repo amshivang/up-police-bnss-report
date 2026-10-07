@@ -15,9 +15,13 @@ print("  UP Police - BNSS 126/135 Chalani Report Server")
 print(f"  Serving on: http://localhost:{PORT}")
 print("=" * 60)
 
-webbrowser.open(f"http://localhost:{PORT}")
+try:
+    webbrowser.open(f"http://localhost:{PORT}")
+except Exception:
+    pass
 
-with socketserver.TCPServer(("", PORT), Handler) as httpd:
+socketserver.TCPServer.allow_reuse_address = True
+with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
