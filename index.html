@@ -48,11 +48,11 @@
       <div class="header-actions">
         <!-- Navigation Tabs -->
         <nav class="nav-switcher">
-          <button id="nav-btn-generator" class="nav-btn active" onclick="switchMainView('generator')">
+          <button id="nav-btn-generator" class="nav-btn" onclick="switchMainView('generator')">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             <span>रिपोर्ट जनरेटर</span>
           </button>
-          <button id="nav-btn-dashboard" class="nav-btn" onclick="switchMainView('dashboard')">
+          <button id="nav-btn-dashboard" class="nav-btn active" onclick="switchMainView('dashboard')">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
             <span>पूर्व रिपोर्ट्स (<span id="saved-count-badge">0</span>)</span>
           </button>
@@ -62,7 +62,7 @@
   </header>
 
   <!-- ================= VIEW 1: पूर्व रिपोर्ट्स डैशबोर्ड ================= -->
-  <main id="dashboard-view" class="view-section dashboard-container no-print" style="display: none;">
+  <main id="dashboard-view" class="view-section dashboard-container no-print">
     <!-- Dashboard Top Bar -->
     <div class="dashboard-header-card">
       <div class="dash-welcome">
@@ -72,7 +72,7 @@
       <div class="dash-top-actions">
         <button class="btn btn-primary" onclick="startNewReportAndSwitch()">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          <span>+ नई रिपोर्ट तैयार करें</span>
+          <span>नई रिपोर्ट तैयार करें</span>
         </button>
       </div>
     </div>
@@ -121,14 +121,14 @@
         <p>आपने अभी तक कोई चलानी रिपोर्ट सुरक्षित नहीं की है या खोज परिणाम रिक्त हैं।</p>
         <button class="btn btn-primary" onclick="startNewReportAndSwitch()">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          <span>+ नई रिपोर्ट तैयार करें</span>
+          <span>नई रिपोर्ट तैयार करें</span>
         </button>
       </div>
     </div>
   </main>
 
   <!-- ================= VIEW 2: रिपोर्ट जनरेटर (फॉर्म + लाइव प्रीव्यू) ================= -->
-  <main id="generator-view" class="view-section split-container">
+  <main id="generator-view" class="view-section split-container" style="display: none;">
     
     <!-- Mobile View Toggle Tabs (Small Screens) -->
     <div class="mobile-tab-bar no-print">

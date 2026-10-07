@@ -9,7 +9,7 @@ const DRAFT_KEY = 'upp_bnss_active_draft_v1';
 
 // Initial Application State
 let appState = {
-  activeView: 'generator',      // 'generator' | 'dashboard'
+  activeView: 'dashboard',      // 'dashboard' | 'generator'
   activeMobileTab: 'form',      // 'form' | 'preview'
   editingReportId: null,        // null when creating new, or string ID when editing
   reports: [],
@@ -44,11 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   syncLivePreview();
   renderDashboard();
 
-  if (appState.reports && appState.reports.length > 0) {
-    switchMainView('dashboard');
-  } else {
-    switchMainView('generator');
-  }
+  switchMainView('dashboard');
 
   const form = document.getElementById('report-input-form');
   if (form) {
@@ -107,10 +103,6 @@ function loadReportsFromStorage() {
   } catch (e) {
     console.error('Storage error:', e);
     appState.reports = [];
-  }
-
-  if (!appState.reports || appState.reports.length === 0) {
-    switchMainView('generator');
   }
 }
 
